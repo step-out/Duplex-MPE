@@ -1,0 +1,21 @@
+# Only the minimal public evaluation package belongs in this repository.
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/pyproject.toml
+!/duplex_mpe/
+!/examples/
+/duplex_mpe/*
+!/duplex_mpe/__init__.py
+!/duplex_mpe/__main__.py
+!/duplex_mpe/dataset.py
+!/duplex_mpe/protocol.py
+!/duplex_mpe/vad.py
+!/duplex_mpe/runner.py
+!/duplex_mpe/metrics.py
+!/duplex_mpe/semantic.py
+!/duplex_mpe/prompts.py
+!/duplex_mpe/seeds.json
+/examples/*
+!/examples/dummy_model.py

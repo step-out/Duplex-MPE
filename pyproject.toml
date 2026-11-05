@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duplex-mpe"
+version = "0.1.0"
+description = "Model-independent evaluation tools for Duplex-MPE"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = [
+    "numpy>=1.24",
+    "soundfile>=0.12",
+    "scipy>=1.10",
+    "torch>=2.0",
+    "silero-vad==6.2.1",
+]
+
+[project.optional-dependencies]
+asr = ["qwen-asr==0.0.6", "torch>=2.2"]
+
+[project.scripts]
+duplex-mpe = "duplex_mpe.__main__:main"
+
+[tool.setuptools]
+packages = ["duplex_mpe"]
+
+[tool.setuptools.package-data]
+duplex_mpe = ["seeds.json"]
