@@ -6,12 +6,16 @@ in Full-Duplex Dialogue**.
 [Paper](https://arxiv.org/abs/2609.31948) ·
 [Project page](https://step-out.github.io/Duplex-MPE-Page/) ·
 [Dataset on Hugging Face](https://huggingface.co/datasets/ChengqianMa/Duplex-MPE) ·
-[Dataset on ModelScope](https://www.modelscope.ai/datasets/ChengqianMa/Duplex-MPE)
+[Dataset on ModelScope](https://www.modelscope.ai/datasets/ChengqianMa/Duplex-MPE) ·
+[SGLang-Omni benchmark](https://sgl-project.github.io/sglang-omni/developer_reference/full_duplex_guide.html#multi-party-benchmark-duplex-mpe)
 
 This package contains the shared scheduler, speech detector, six metrics, scored
 ASR windows, and semantic-judge prompts. Connect your own model through the small
-interface below. Model-specific integrations, weights, historical model outputs,
-dataset construction, and paper-generation tools are not included.
+interface below, or evaluate live `/v1/realtime` servers directly in
+[SGLang-Omni](#live-v1realtime-evaluation-in-sglang-omni)
+([PR #4157](https://github.com/sgl-project/sglang-omni/pull/4157)). Model-specific
+in-process weights, historical model outputs, dataset construction, and
+paper-generation tools are not included.
 
 ## Install and check the data
 
@@ -170,5 +174,59 @@ definitions. It does not provide one-command regeneration of the eight paper
 systems. Run records identify this package's code fingerprint; historical run
 fingerprints should remain unchanged when rescoring their saved reports.
 
+## Live `/v1/realtime` evaluation in SGLang-Omni
+
+Duplex-MPE is natively integrated into **[SGLang-Omni](https://github.com/sgl-project/sglang-omni)** ([PR #4157](https://github.com/sgl-project/sglang-omni/pull/4157)) for closed-loop evaluation of live `/v1/realtime` WebSocket servers across native full-duplex (`MiniCPM-o 4.5`, `PersonaPlex`, `Nemotron VoiceChat`) and unscored turn-based probe (`Qwen3-Omni`, `Streaming Cascade`) deployments:
+
+- **Online Documentation & Runbook**: [Full-Duplex Guide — Multi-Party Benchmark: Duplex-MPE](https://sgl-project.github.io/sglang-omni/developer_reference/full_duplex_guide.html#multi-party-benchmark-duplex-mpe)
+- **Benchmark CLI Guide**: [`benchmarks/README.md#duplex-mpe-multi-party-full-duplex-evaluation`](https://github.com/sgl-project/sglang-omni/blob/main/benchmarks/README.md#duplex-mpe-multi-party-full-duplex-evaluation)
+- **Source Code**: [`benchmarks/duplex/mpe/`](https://github.com/sgl-project/sglang-omni/tree/main/benchmarks/duplex/mpe)
+
+```bash
+# Prepare the 40-stream smoke subset (or --dataset duplex-mpe for all 4,000 streams)
+python -m benchmarks.dataset.prepare --dataset duplex-mpe-mini --local-dir benchmarks/cache/duplex_mpe_mini
+
+# Evaluate a running /v1/realtime endpoint end-to-end
+python -m benchmarks.eval.benchmark_duplex_mpe \
+  --dataset-root benchmarks/cache/duplex_mpe_mini \
+  --output-dir benchmarks/results/duplex_mpe_minicpmo \
+  --mini \
+  --model openbmb/MiniCPM-o-4_5 \
+  --base-url http://127.0.0.1:8000 \
+  --asr-base-url http://127.0.0.1:8001 \
+  --judge-config benchmarks/configs/duplex_mpe_judge.example.json
+```
+
+## Citation
+
 Code is distributed under the [MIT license](LICENSE). Cite the linked paper when
 using the benchmark; the separately released dataset has its own license.
+
+```bibtex
+@article{ma2026duplexmpe,
+  title   = {Duplex-MPE: Benchmarking Multi-Party Interaction in Full-Duplex Dialogue},
+  author  = {Ma, Chengqian and Feng, Wenhao and Jin, Weixuan and Dai, Gaole and Xie, Tianyu and Ma, Yuexiao and Kang, Zhaolu and Zhao, Xiangyu and Zheng, Xiawu and Chao, Fei},
+  journal = {arXiv preprint arXiv:2609.31948},
+  year    = {2026}
+}
+```
+
+When using the live `/v1/realtime` integration in [SGLang-Omni](https://github.com/sgl-project/sglang-omni), please also cite the SGLang-Omni runtime posts:
+
+```bibtex
+@misc{sglangomniinteractive2026,
+  title        = {Unified Runtime for Full-Duplex Interactive Intelligence with {SGLang Omni}},
+  author       = {{SGLang-Omni Team}},
+  howpublished = {\url{https://www.sglang.io/blog/omni-interactive-runtime}},
+  year         = {2026},
+  month        = {oct}
+}
+
+@misc{sglangomni2026,
+  title        = {{SGLang Omni}: Serving Multi-Stage Omni Models with Heterogeneous Stage Scheduling},
+  author       = {{SGLang-Omni Team}},
+  howpublished = {\url{https://www.sglang.io/blog/spg-topology}},
+  year         = {2026},
+  month        = {oct}
+}
+```
