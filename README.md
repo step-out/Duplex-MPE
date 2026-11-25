@@ -13,7 +13,8 @@ This package contains the shared scheduler, speech detector, six metrics, scored
 ASR windows, and semantic-judge prompts. Connect your own model through the small
 interface below, or evaluate live `/v1/realtime` servers directly in
 [SGLang-Omni](#live-v1realtime-evaluation-in-sglang-omni)
-([PR #4157](https://github.com/sgl-project/sglang-omni/pull/4157)). Model-specific
+([PR #4157](https://github.com/sgl-project/sglang-omni/pull/4157),
+[PR #4516](https://github.com/sgl-project/sglang-omni/pull/4516)). Model-specific
 in-process weights, historical model outputs, dataset construction, and
 paper-generation tools are not included.
 
@@ -176,11 +177,15 @@ fingerprints should remain unchanged when rescoring their saved reports.
 
 ## Live `/v1/realtime` evaluation in SGLang-Omni
 
-Duplex-MPE is natively integrated into **[SGLang-Omni](https://github.com/sgl-project/sglang-omni)** ([PR #4157](https://github.com/sgl-project/sglang-omni/pull/4157)) for closed-loop evaluation of live `/v1/realtime` WebSocket servers across native full-duplex (`MiniCPM-o 4.5`, `PersonaPlex`, `Nemotron VoiceChat`) and unscored turn-based probe (`Qwen3-Omni`, `Streaming Cascade`) deployments:
+Duplex-MPE is natively integrated into **[SGLang-Omni](https://github.com/sgl-project/sglang-omni)** for closed-loop evaluation of live `/v1/realtime` WebSocket servers across native full-duplex (`MiniCPM-o 4.5`, `PersonaPlex`, `Nemotron VoiceChat`) and unscored turn-based probe (`Qwen3-Omni`, `Streaming Cascade`) deployments:
 
+- **Merged Upstream PRs**:
+  - **[PR #4157](https://github.com/sgl-project/sglang-omni/pull/4157)** — End-to-end Duplex-MPE dataset preparation (`duplex-mpe` / `duplex-mpe-mini`), reactive `/v1/realtime` WebSocket scheduler, causal Silero VAD 6.2.1 detector, windowed ASR + LLM judge scoring pipeline, and documentation.
+  - **[PR #4516](https://github.com/sgl-project/sglang-omni/pull/4516)** — Follow-up adding `conversation.item.truncate` (`audio_end_ms`) synchronization on interrupted client playback, partial ASR checkpoint reporting in `--phase score`, `turn_detection` echo validation, and resume provenance tracking.
 - **Online Documentation & Runbook**: [Full-Duplex Guide — Multi-Party Benchmark: Duplex-MPE](https://sgl-project.github.io/sglang-omni/developer_reference/full_duplex_guide.html#multi-party-benchmark-duplex-mpe)
 - **Benchmark CLI Guide**: [`benchmarks/README.md#duplex-mpe-multi-party-full-duplex-evaluation`](https://github.com/sgl-project/sglang-omni/blob/main/benchmarks/README.md#duplex-mpe-multi-party-full-duplex-evaluation)
 - **Source Code**: [`benchmarks/duplex/mpe/`](https://github.com/sgl-project/sglang-omni/tree/main/benchmarks/duplex/mpe)
+- **Live `/v1/realtime` Evaluation Artifacts**: [`ChengqianMa/Duplex-MPE-sglang-omni-eval`](https://huggingface.co/datasets/ChengqianMa/Duplex-MPE-sglang-omni-eval)
 
 ```bash
 # Prepare the 40-stream smoke subset (or --dataset duplex-mpe for all 4,000 streams)
