@@ -7,14 +7,17 @@ in Full-Duplex Dialogue**.
 [Project page](https://step-out.github.io/Duplex-MPE-Page/) ·
 [Dataset on Hugging Face](https://huggingface.co/datasets/ChengqianMa/Duplex-MPE) ·
 [Dataset on ModelScope](https://www.modelscope.ai/datasets/ChengqianMa/Duplex-MPE) ·
-[SGLang-Omni benchmark](https://sgl-project.github.io/sglang-omni/developer_reference/full_duplex_guide.html#multi-party-benchmark-duplex-mpe)
+[SGLang-Omni benchmark](https://sgl-project.github.io/sglang-omni/developer_reference/full_duplex_guide.html#multi-party-benchmark-duplex-mpe) ·
+[vLLM-Omni benchmark](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/duplex_mpe/README.md)
 
 This package contains the shared scheduler, speech detector, six metrics, scored
 ASR windows, and semantic-judge prompts. Connect your own model through the small
 interface below, or evaluate live `/v1/realtime` servers directly in
 [SGLang-Omni](#live-v1realtime-evaluation-in-sglang-omni)
 ([PR #4157](https://github.com/sgl-project/sglang-omni/pull/4157),
-[PR #4516](https://github.com/sgl-project/sglang-omni/pull/4516)). Model-specific
+[PR #4516](https://github.com/sgl-project/sglang-omni/pull/4516)) and
+[vLLM-Omni](#live-v1realtime-evaluation-in-vllm-omni)
+([PR #11156](https://github.com/vllm-project/vllm-omni/pull/11156)). Model-specific
 in-process weights, historical model outputs, dataset construction, and
 paper-generation tools are not included.
 
@@ -115,7 +118,7 @@ exported `max_tokens` and, when present, `temperature` settings.
 Fill `judge/verdicts_to_fill.json` with these fields and save it as `judgments.json`:
 
 | Task | Required decision |
-|---|---|
+| --- | --- |
 | `answer` | `correct`: JSON `true` or `false` |
 | `silence` | `label`: `BACKCHANNEL` or `SUBSTANTIVE_INTRUSION` |
 
@@ -202,6 +205,36 @@ python -m benchmarks.eval.benchmark_duplex_mpe \
   --judge-config benchmarks/configs/duplex_mpe_judge.example.json
 ```
 
+## Live `/v1/realtime` evaluation in vLLM-Omni
+
+Duplex-MPE is also natively integrated into **[vLLM-Omni](https://github.com/vllm-project/vllm-omni)** for closed-loop evaluation of `/v1/realtime?duplex=1` and `/v1/realtime` streaming servers across native full-duplex (`MiniCPM-o 4.5`, `PersonaPlex`, `Nemotron VoiceChat`) and unscored turn-based probe (`Qwen3-Omni`) deployments:
+
+- **Merged Upstream PR**: **[PR #11156](https://github.com/vllm-project/vllm-omni/pull/11156)** — End-to-end Duplex-MPE dataset preparation and validation (`prepare` / `validate`), reactive `/v1/realtime?duplex=1` WebSocket scheduler with `playback.ack` and `conversation.item.truncate` synchronization, causal Silero VAD 6.2.1 detector, resumable OpenAI-compatible ASR + LLM judge scoring pipeline, and separated generation/scoring provenance.
+- **Online Documentation**: [Realtime Full-Duplex API Guide](https://docs.vllm.ai/projects/vllm-omni/en/latest/serving/realtime_duplex_api/)
+- **Benchmark CLI Guide**: [`benchmarks/duplex_mpe/README.md`](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/duplex_mpe/README.md)
+- **Source Code**: [`benchmarks/duplex_mpe/`](https://github.com/vllm-project/vllm-omni/tree/main/benchmarks/duplex_mpe)
+
+Run these commands from a `vLLM-Omni` checkout with its benchmark dependencies installed (see the [Benchmark CLI Guide](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/duplex_mpe/README.md) for server launch profiles):
+
+```bash
+# Download and verify the 40-scenario smoke subset (drop --mini for all 4,000 scenarios)
+python -m benchmarks.duplex_mpe prepare \
+  --dataset-root benchmarks/cache/duplex_mpe_mini \
+  --mini
+
+# Evaluate a running vLLM-Omni /v1/realtime?duplex=1 endpoint end-to-end
+python -m benchmarks.duplex_mpe run \
+  --dataset-root benchmarks/cache/duplex_mpe_mini \
+  --output-dir benchmarks/results/minicpmo_mini \
+  --mini --phase all \
+  --base-url http://127.0.0.1:8091 \
+  --model openbmb/MiniCPM-o-4_5 \
+  --asr-base-url http://127.0.0.1:8092/v1 \
+  --asr-model Qwen/Qwen3-ASR-1.7B \
+  --judge-config benchmarks/duplex_mpe/configs/judge.example.json \
+  --strict-reference-vad-version
+```
+
 ## Citation
 
 Code is distributed under the [MIT license](LICENSE). Cite the linked paper when
@@ -233,5 +266,26 @@ When using the live `/v1/realtime` integration in [SGLang-Omni](https://github.c
   howpublished = {\url{https://www.sglang.io/blog/spg-topology}},
   year         = {2026},
   month        = {oct}
+}
+```
+
+When using the live `/v1/realtime` integration in [vLLM-Omni](https://github.com/vllm-project/vllm-omni), please also cite the vLLM-Omni papers:
+
+```bibtex
+@article{vllmomni2026technicalreport,
+  title   = {vLLM-Omni Technical Report: A Unified Serving Runtime for Omni-Modality Generation},
+  author  = {{vLLM-Omni Team}},
+  journal = {arXiv preprint arXiv:2610.09307},
+  year    = {2026}
+}
+
+@article{yin2026vllmomni,
+  title   = {vLLM-Omni: Fully Disaggregated Serving for Any-to-Any Multimodal Models},
+  author  = {Peiqi Yin and Jiangyun Zhu and Han Gao and Chenguang Zheng and
+             Yongxiang Huang and Taichang Zhou and Ruirui Yang and Weizhi Liu and
+             Weiqing Chen and Canlin Guo and Didan Deng and Zifeng Mo and
+             Cong Wang and James Cheng and Roger Wang and Hongsheng Liu},
+  journal = {arXiv preprint arXiv:2602.02204},
+  year    = {2026}
 }
 ```
